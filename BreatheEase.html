@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Breathe Ease</title>
+    <style>
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
+        body {
+          font-family: Arial, sans-serif;
+          display: grid;
+          grid-template-columns: 250px 1fr 300px;
+          grid-template-rows: auto 1fr;
+          height: 100vh;
+          background: #FAF9EE;
+          color: #333;
+          gap: 10px;
+        }
+        header {
+          grid-column: 1 / -1;
+          background: #A2AF9B;
+          color: white;
+          padding: 15px;
+          text-align: center;
+          font-size: 3rem;
+        }
+        #sidebar {
+          grid-row: 2;
+          background: #DBE4C9;
+          padding: 20px;
+          margin-left: 10px;
+          border-radius: 15px;
+        }
+        #sidebar h2 {
+          margin-bottom: 15px;
+        }
+        #exerciseList {
+          list-style: none;
+        }
+        #exerciseList li {
+          padding: 8px;
+          cursor: pointer;
+          background: #ffffff;
+          margin-bottom: 8px;
+          border-radius: 6px;
+          transition: background 0.3s;
+        }
+        #exerciseList li:hover {
+          background: #FAF9EE;
+        }
+        #main {
+          grid-row: 2;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        }
+        #circle {
+          width: 120px;
+          height: 120px;
+          border-radius: 50%;
+          background: #DCCFC0;
+          transition: transform 4s ease-in-out;
+          margin: 40px 40px 40px 40px;
+        }
+        #phase {
+          font-size: 1.2rem;
+          margin-bottom: 15px;
+        }
+        #controls button {
+          padding: 10px 20px;
+          margin: 0 5px;
+          font-size: 1rem;
+          background-color: #DBE4C9;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+        #infoPanel {
+          grid-row: 2;
+          background: #DBE4C9;
+          padding: 20px;
+          height: 250px;
+          margin-right: 10px;
+          border-radius: 15px;
+        }
+
+        #spotify {
+          width: 100%;
+          height: 80px;
+          align: right;
+          margin-top: 20px;
+          margin-right: 20px;
+
+        }
+        @media (max-width: 768px) {
+          body {
+            grid-template-columns: 1fr;
+            grid-template-rows: auto auto auto auto;
+          }
+          #sidebar,
+          #main,
+          #infoPanel {
+            width: 100%;
+          }
+        }
+    </style>
+</head>
+<body>
+<header>✨Breathe Ease</header>
+
+<div id="sidebar">
+    <h2>Exercises</h2>
+    <ul id="exerciseList">
+        <li onclick="selectExercise('box')">Box Breathing</li>
+        <li onclick="selectExercise('478')">4-7-8 Breathing</li>
+        <li onclick="selectExercise('336')">3-3-6 Breathing</li>
+        <li onclick="selectExercise('PLB')">Pursed Lip Breathing</li>
+        <li onclick="selectExercise('DB')">Diaphragmatic Breathing</li>
+        <li onclick="selectExercise('PB')">Power Breathing</li>
+    </ul>
+</div>
+
+<div id="main">
+    <div id="circle"></div>
+    <p id="phase">Ready</p>
+    <div id="controls">
+        <button id="startPauseBtn" onclick="toggleBreathing()">Start</button>
+    </div>
+</div>
+
+<div >
+    <div id="infoPanel">
+        <h3 id="exerciseTitle">Box Breathing</h3>
+        </br>
+        <p id="purpose">Purpose: Calm, Focus</p>
+        </br>
+        <p id="pattern">Pattern: Inhale 4s → Hold 4s → Exhale 4s → Hold 4s</p>
+        </br>
+        <p id="instructions">
+            How: Breathe in for 4 seconds, hold for 4, exhale for 4, hold again. Repeat.
+        </p>
+    </div>
+
+    <div id="spotify">
+        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/album/0oO25pHUeBBa0H4wARLh7D?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    </div>
+</div>
+
+
+<script>
+    const circle = document.getElementById("circle");
+    const phaseText = document.getElementById("phase");
+    const title = document.getElementById("exerciseTitle");
+    const purpose = document.getElementById("purpose");
+    const pattern = document.getElementById("pattern");
+    const instructions = document.getElementById("instructions");
+    const startPauseBtn = document.getElementById("startPauseBtn");
+
+    let timing = { inhale: 4000, hold1: 4000, exhale: 4000, hold2: 4000 };
+    let isRunning = false;
+    let timeout;
+
+    const exercises = {
+      box: {
+        title: "Box Breathing",
+        purpose: "Calm, Focus",
+        pattern: "Inhale 4s → Hold 4s → Exhale 4s → Hold 4s",
+        instructions:
+          "Breathe in for 4 seconds, hold for 4, exhale for 4, hold again. Repeat.",
+        timing: { inhale: 4000, hold1: 4000, exhale: 4000, hold2: 4000 },
+      },
+      478: {
+        title: "4-7-8 Breathing",
+        purpose: "Sleep, Anxiety",
+        pattern: "Inhale 4s → Hold 7s → Exhale 8s",
+        instructions:
+          "Breathe in for 4 seconds, hold for 7 seconds, exhale slowly for 8 seconds.",
+        timing: { inhale: 4000, hold1: 7000, exhale: 8000, hold2: 0 },
+      },
+      336: {
+        title: "3-3-6 Breathing",
+        purpose: "Gentle Calm",
+        pattern: "Inhale 3s → Hold 3s → Exhale 6s",
+        instructions:
+          "Breathe in for 3 seconds, hold for 3 seconds, exhale for 6 seconds.",
+        timing: { inhale: 3000, hold1: 3000, exhale: 6000, hold2: 0 },
+      },
+      PLB: {
+        title: "Pursed Lip Breathing",
+        purpose: "Lung Health",
+        pattern: "Inhale 2s -> exhale 4s",
+        instructions: "Breathe in through nose for 2 seconds, exhale though pursed lips for 4 seconds.",
+        timing: { inhale: 2000, hold1: 0, exhale: 6000, hold2: 0},
+      },
+      DB: {
+        title: "Diaphragmatic Breathing",
+        purpose: "Grounding & Health",
+        pattern: "Inhale 4s -> Exhale 6s ",
+        instructions: "Breathe in while expanding belly for 4 seconds, exhale slowly for 6 seconds. ",
+        timing: { inhale: 4000, hold1: 0, exhale: 6000, hold2: 0},
+      },
+      PB: {
+        title: "Power Breathing",
+        purpose: "Energy",
+        pattern: "Inhale 2s -> Exhale 2s",
+        instructions: "Breathe in and out quickly.",
+        timing: { inhale: 2000, hold1: 0, exhale: 2000, hold2: 0},
+      },
+
+    };
+
+    let phases = [];
+    let phaseIndex = 0;
+
+    function selectExercise(key) {
+      const ex = exercises[key];
+      title.textContent = ex.title;
+      purpose.textContent = "Purpose: " + ex.purpose;
+      pattern.textContent = "Pattern: " + ex.pattern;
+      instructions.textContent = "How: " + ex.instructions;
+      timing = ex.timing;
+      isRunning = false;
+      phaseText.textContent = "Ready";
+      circle.style.transform = "scale(1)";
+      clearTimeout(timeout);
+      startPauseBtn.textContent = "Start";
+    }
+
+    function toggleBreathing() {
+      if (!isRunning) {
+        startBreathing();
+        startPauseBtn.textContent = "Pause";
+      } else {
+        pauseBreathing();
+        startPauseBtn.textContent = "Start";
+      }
+    }
+
+    function startBreathing() {
+      if (isRunning) return;
+      isRunning = true;
+      breatheCycle();
+    }
+
+    function pauseBreathing() {
+      if (!isRunning) return;
+      isRunning = false;
+      clearTimeout(timeout);
+      phaseText.textContent = "Paused";
+    }
+
+    function breatheCycle() {
+      if (!isRunning) return;
+
+      phases = [
+        { name: "Inhale...", duration: timing.inhale, scale: 1.5 },
+        { name: "Hold...", duration: timing.hold1, scale: 1.5 },
+        { name: "Exhale...", duration: timing.exhale, scale: 1 },
+      ];
+      if (timing.hold2 > 0) {
+        phases.push({ name: "Hold...", duration: timing.hold2, scale: 1 });
+      }
+
+      phaseIndex = 0;
+      runPhase();
+    }
+
+    function runPhase() {
+      if (!isRunning) return;
+
+      const phase = phases[phaseIndex];
+      phaseText.textContent = phase.name;
+      circle.style.transform = `scale(${phase.scale})`;
+
+      timeout = setTimeout(() => {
+        if (!isRunning) return;
+
+        phaseIndex = (phaseIndex + 1) % phases.length;
+        runPhase();
+      }, phase.duration);
+    }
+
+    // Initialize with box breathing selected
+    selectExercise("box");
+</script>
+</body>
+</html>
